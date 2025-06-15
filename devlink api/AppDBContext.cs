@@ -13,5 +13,6 @@ namespace devlink_api
 
         }
         public DbSet<Link> Links { get; set; }
+        public DbSet<Support> Support { get; set; }
     }
 }
