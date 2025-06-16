@@ -14,8 +14,8 @@ namespace devlink_api.Controllers
             _context = context;
 
         }
-        [HttpGet("{SupportId}")]
-        public async Task<ActionResult<IEnumerable<Support>>> GetSupport(string supportId)
+        [HttpGet("CaseId/{SupportId}")]
+        public async Task<ActionResult<IEnumerable<Support>>> GetSupport(ulong supportId)
         {
             var supportData = await _context.Support.Where(support => support.SupportId == supportId).ToListAsync();
 
@@ -33,14 +33,25 @@ namespace devlink_api.Controllers
         public async Task <ActionResult<Support>> CreateSupport(Support support)
         {
 
-            support.SupportId = Guid.NewGuid().ToString();
+            
             _context.Support.Add(support);
             await _context.SaveChangesAsync();
                 return CreatedAtAction(nameof(GetSupport), new {SupportId=support.SupportId},support);
 
+        }
 
-           
-
+        [HttpGet("Email/{Email}")]
+        public async Task<ActionResult<IEnumerable<Support>>> GetSupportByEmail(string email)
+        {
+            var supportData = await _context.Support.Where(support => support.Email == email).ToListAsync();
+            if(supportData == null)
+            {
+                return NotFound("No cases found");
+            }
+            else
+            {
+                return supportData;
+            }
         }
     }
 }

@@ -1,9 +1,16 @@
 ﻿using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
+using System.Text.Json.Serialization;
 
 namespace devlink_api.Models
 {
     public class Support
     {
+        [Required]
+        [JsonPropertyName("caseId")]
+        public ulong SupportId { get; set; }
+       
+
         [Required]
         public string Name { get; set; }
         [Required]
@@ -12,8 +19,6 @@ namespace devlink_api.Models
         public string Contact { get; set; }
         [Required]
         public string Issue { get; set; }
-
-        public string? SupportId { get; set; }
         
     }
 }
