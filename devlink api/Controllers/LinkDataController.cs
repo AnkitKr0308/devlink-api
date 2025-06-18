@@ -46,5 +46,17 @@ namespace devlink_api.Controllers
             
             return CreatedAtAction(nameof(GetLinkByUser), new { userId = link.UserId }, link);
         }
+
+        [HttpDelete("{id}")]
+        public async Task <IActionResult> DeleteLink (int id)
+        {
+           var delete =  await _context.Links.Where(Link => Link.id == id).ExecuteDeleteAsync();
+
+           if(delete == 0)
+            {
+                return NotFound();
+            }
+            return Ok("ID: "+id +" deleted successfully");
+        }
     }
 }
