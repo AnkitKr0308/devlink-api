@@ -2,6 +2,8 @@
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using MySql.Data.MySqlClient;
+
 
 namespace devlink_api.Controllers
 {
@@ -23,18 +25,21 @@ namespace devlink_api.Controllers
         }
 
         [HttpGet("{userId}")]
-        public async Task<ActionResult<IEnumerable<Link>>> GetLinkByUser(string userId)
+        public async Task<ActionResult<IEnumerable<Link>>> GetLinkByUser(string userId, [FromQuery] string? search)
         {
-            var data = await _context.Links.Where(link=>link.UserId == userId).ToListAsync();
+            
+            var userParam = new MySqlParameter("@userIdParam", userId);
+            var searchParam = new MySqlParameter("@SearchParam", search ?? (object)DBNull.Value);
 
-            if (data == null) 
+            var results = await _context.Links.
+                   FromSqlRaw("CALL sp_GetFilteredLinks(@userIdParam, @SearchParam)", userParam, searchParam)
+                   .ToListAsync();
+
+            if (results == null) 
             {
                 return NotFound("No Data Found");
                     }
-            else
-            {
-                return data;
-            }
+            return results;
         }
 
         [HttpPost]
@@ -57,6 +62,24 @@ namespace devlink_api.Controllers
                 return NotFound();
             }
             return Ok("ID: "+id +" deleted successfully");
+        }
+
+        [HttpPut("{id}")]
+        public async Task <ActionResult<Link>> UpdateLink (int id, [FromBody] Link updatedLink)
+        {
+            var existingLink = await _context.Links.FirstOrDefaultAsync(l => l.id == id);
+            if(existingLink == null)
+            {
+                return NotFound();
+            }
+            existingLink.Title = updatedLink.Title;
+            existingLink.Description = updatedLink.Description;
+            existingLink.Url = updatedLink.Url;
+            existingLink.Category = updatedLink.Category;
+
+            await _context.SaveChangesAsync();
+
+            return Ok(existingLink);
         }
     }
 }
