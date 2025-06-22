@@ -81,5 +81,29 @@ namespace devlink_api.Controllers
 
             return Ok(existingLink);
         }
+
+        [HttpGet("Filter/{userId}")]
+        public async Task<ActionResult<Link>> GetCategories(string userId) 
+        {
+           var categories = await _context.Links.Where(Link => Link.UserId == userId).Select (Link => Link.Category).Distinct().ToListAsync();
+
+            return Ok(categories);
+        }
+
+        [HttpGet("User/{userId}")]
+        public async Task <ActionResult<Link>> GetLinksByCategory(string userId, [FromQuery] string? category)
+        {
+            var userParam = new MySqlParameter("@userIdParam", userId);
+            var categoryParam = new MySqlParameter("@categoryParam", category);
+          var results =  await _context.Links.FromSqlRaw("CALL sp_GetLinksByCategory (@userIdParam, @categoryParam)", userParam, categoryParam).ToListAsync();
+            if(results == null)
+            {
+                return NotFound();
+            }
+            else
+            {
+                return Ok(results);
+            }
+        }
     }
 }
